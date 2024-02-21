@@ -1,4 +1,4 @@
-name: modulexts
+name: ModuleXNote
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -44,6 +44,11 @@ dependencies:
   firebase_messaging: ^14.7.6
 
   cupertino_icons: ^1.0.2
+  #시간
+  intl: ^0.17.0
+  #즐겨찾기
+  shared_preferences: ^2.0.12
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +63,10 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
+  fonts:
+    - family: CustomFont
+      fonts:
+        - asset: assets/Oswald-Bold.ttf
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

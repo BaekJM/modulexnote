@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'PageParch1/PageParch1.dart';
 import 'ServePage.dart';
@@ -16,6 +17,9 @@ class _FirstPageState extends State<FirstPage> {
 
   @override
   Widget build(BuildContext context) {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    User? user = _auth.currentUser;
+    String userEmail = user!.email!;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

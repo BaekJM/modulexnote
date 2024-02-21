@@ -31,16 +31,47 @@ class _NextPageState extends State<NextPage> {
         elevation: 0.0,
         actions: [
           IconButton(
-              onPressed: () async {
+            onPressed: () async {
+              bool confirmDelete = await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    backgroundColor: Colors.white,
+                    elevation: 2.0,
+                    title: Text("削除確認"),
+                    content: Text("本当にこのノートを削除しますか？"),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(true); // true를 반환하여 삭제 수행
+                        },
+                        child: Text("Yes"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(false); // false를 반환하여 삭제 취소
+                        },
+                        child: Text("No"),
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              if (confirmDelete ?? false) {
+                // confirmDelete가 null이면 false로 처리
                 FirebaseFirestore.instance
                     .collection(widget.data)
                     .doc(widget.doc[day])
                     .delete()
                     .then((value) {
                   Navigator.pop(context);
-                }).catchError((error) => print('뭔가 잘못됬어 삭제를 못하잖아 이유를 찾아봐'));
-              },
-              icon: Icon(Icons.delete))
+                }).catchError((error) =>
+                    print('뭔가 잘못됬어 삭제를 못하잖아 이유를 찾아봐'));
+              }
+            },
+            icon: Icon(Icons.delete),
+          )
         ],
       ),
       body:ListView(
