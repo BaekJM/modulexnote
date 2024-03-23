@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "314064686633",
+    "project_id": "modulexnote",
+    "storage_bucket": "modulexnote.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:314064686633:android:0a62355735ad3db1a3d638",
+        "android_client_info": {
+          "package_name": "com.example.modulexNote"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8qs8pa0aEU6R53BV2oTxOufRYlrIPU34"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
