@@ -111,10 +111,10 @@ class _NextPageState extends State<NextPage> {
                 onChanged: (text) {
                   FirebaseFirestore.instance
                       .collection(widget.data)
-                      .doc(widget.doc[Title])
+                      .doc(widget.doc[day])
                       .update({
                     content: text,
-                  }).then((value) {}).catchError((error) => print('뭔가 잘못됬어 찾아봐'));
+                  }).then((value) {}).catchError((error) => print('뭔가 잘못됬어 찾아봐2121  '));
                 },
                 decoration: InputDecoration(
                     border: InputBorder.none, hintText: "News content",

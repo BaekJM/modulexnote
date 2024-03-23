@@ -35,7 +35,7 @@ class _News_UpdateState extends State<News_Update> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-              controller: _titleController,
+                controller: _titleController,
               decoration: InputDecoration(
                   border: InputBorder.none,
                   hintText: "News Name"

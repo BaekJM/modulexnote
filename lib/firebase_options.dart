@@ -24,10 +24,7 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
@@ -52,12 +49,20 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyB8qs8pa0aEU6R53BV2oTxOufRYlrIPU34',
+    appId: '1:314064686633:android:0a62355735ad3db1a3d638',
+    messagingSenderId: '314064686633',
+    projectId: 'modulexnote',
+    storageBucket: 'modulexnote.appspot.com',
+  );
+
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCXCsT8hug9NCHIGR90-uu-HJrDlb0PsWo',
-    appId: '1:831685940435:ios:c3cff6a6886c38b01df026',
-    messagingSenderId: '831685940435',
-    projectId: 'modulexts-fd2b7',
-    storageBucket: 'modulexts-fd2b7.appspot.com',
+    apiKey: 'AIzaSyDs8iSyiqSu9dw48UqkF3r23sBziIltpvc',
+    appId: '1:314064686633:ios:4d773810643dba58a3d638',
+    messagingSenderId: '314064686633',
+    projectId: 'modulexnote',
+    storageBucket: 'modulexnote.appspot.com',
     iosBundleId: 'com.example.modulexNote',
   );
 }

@@ -368,16 +368,13 @@ class _ServePageState extends State<ServePage> {
               ),
             ),
           ),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
+          StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection(widget.doc[Title])
                   .snapshots(),
               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
                 }
                 if (snapshot.hasData) {
                   List<QueryDocumentSnapshot> filteredData =
@@ -410,7 +407,6 @@ class _ServePageState extends State<ServePage> {
                 }
               },
             ),
-          ),
         ],
       ),
       floatingActionButton: FittedBox(

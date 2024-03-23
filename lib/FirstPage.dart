@@ -51,16 +51,11 @@ class _FirstPageState extends State<FirstPage> {
               ),
             ),
           ),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection("FirstPage")
-                  .snapshots(),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection("FirstPage").snapshots(),
               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
                 }
                 if (snapshot.hasData) {
                   List<QueryDocumentSnapshot> filteredData =
@@ -91,7 +86,6 @@ class _FirstPageState extends State<FirstPage> {
                 }
               },
             ),
-          ),
         ],
       ),
       floatingActionButton: Row(
