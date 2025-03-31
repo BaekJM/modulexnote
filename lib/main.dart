@@ -1,9 +1,7 @@
-import 'dart:math';
-
+import 'package:ModulexNote/PageParch1/Mypage/Mypage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ModulexNote/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'LadderList/CalendarPage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -11,7 +9,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'PageParch1/FirstPage.dart';
-import 'PageParch1/Manual/Manualpage.dart';
+import 'PageParch1/LadderList/CalendarPage.dart';
+import 'PageParch1/StockStatus/StockStatusPage.dart';
 
 
 
@@ -36,26 +35,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkUserLoginState();
-  }
-
-  /// 🔹 로그인 상태 확인 후 자동으로 페이지 이동
-  void _checkUserLoginState() {
-    _auth.authStateChanges().listen((User? user) {
-      if (user != null) {
-        // ✅ 로그인된 경우 자동으로 CalendarPage 이동
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => CalendarPage()),
-        );
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +42,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       color: Colors.black,
       title: 'Modulex Connect',
-      home: FirstPage(),
+      home: LoginPage(),
     );
   }
 }

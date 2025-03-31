@@ -1,5 +1,4 @@
-import 'package:ModulexNote/PageParch1/ImageNoticePage/parts/NoticeSidemanu.dart';
-import 'package:ModulexNote/PageParch1/KNXRecepit.dart';
+import 'package:ModulexNote/PageParch1/ProjectPage/parts/NoticeSidemanu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:ModulexNote/PageParch1/NextPagePart.dart';
 import 'package:ModulexNote/PageParch1/ServePageParch.dart';

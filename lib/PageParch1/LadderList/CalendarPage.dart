@@ -6,10 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
-import '../PageParch1/FirstPage.dart';
-import '../parts/drawer.dart';
-import '../parts/SideManu.dart';
+
+import '../../parts/drawer.dart';
 import 'Ladder_firestpage.dart';
 import 'event/add_event.dart';
 import 'package:intl/intl.dart';
@@ -23,14 +23,15 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   DateTime _focusedDay = DateTime.now();
-  Map<String, Color> colorMap = {}; // 클래스 범위에서 선언
+  Map<String, Color> colorMap = {};
   DateTime? _selectedDay;
   Map<DateTime, List<Map<String, dynamic>>> _events = {};
-  CalendarFormat _calendarFormat = CalendarFormat.month; // 달력 포맷 기본 값
-  Color? fetchedColor; // 가져온 색상을 저장할 변수
-  bool isExpanded = false; // 크기 조절을 위한 상태 변수
-  User? user = FirebaseAuth.instance.currentUser; // 🔥 현재 로그인한 사용자 가져오기
-
+  CalendarFormat _calendarFormat = CalendarFormat.month;
+  Color? fetchedColor;
+  bool isExpanded = false;
+  User? user = FirebaseAuth.instance.currentUser;
+  String? email = FirebaseAuth.instance.currentUser?.email;
+  Map<String, dynamic>? userData;
 
   String code = "0000000";
 
@@ -39,36 +40,84 @@ class _CalendarPageState extends State<CalendarPage> {
     super.initState();
     _fetchEvents();
     generateDailyCode();
+    fetchUserData();
+    addStaffPositionIfNotExists(email!);
   }
   @override
   void dispose() {
-    _scrollController.dispose(); // ScrollController 해제
+    _scrollController.dispose();
     super.dispose();
   }
 
+
+  Future<void> addStaffPositionIfNotExists(String userEmail) async {
+    final userRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userEmail)
+        .collection('position')
+        .doc('position');
+
+    final docSnapshot = await userRef.get();
+
+    if (!docSnapshot.exists) {
+      await userRef.set({
+        'position': '社員',
+      });
+      print('Position added.');
+    } else {
+      print('Position already exists.');
+    }
+  }
+
+  Future<void> fetchUserData() async {
+    if (email != null) {
+      userData = await getUserData(email!);
+      setState(() {});
+    }
+  }
+
+  Future<Map<String, dynamic>?> getUserData(String email) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(email)
+          .get();
+
+      if (doc.exists) {
+        return doc.data();
+      } else {
+        print('해당 유저 없음');
+        return null;
+      }
+    } catch (e) {
+      print('에러 발생: $e');
+      return null;
+    }
+  }
+
+
   Future<void> generateDailyCode() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    String today = DateTime.now().toLocal().toString().split(' ')[0]; // YYYY-MM-DD 형식
+    String today = DateTime.now().toLocal().toString().split(' ')[0];
 
     DocumentReference docRef = firestore.collection('daily_codes').doc(today);
     DocumentSnapshot doc = await docRef.get();
 
     if (!doc.exists) {
-      // 🔥 Firestore에 오늘 날짜의 코드가 없을 때만 새 코드 생성
-      String newCode = (10000000 + Random().nextInt(90000000)).toString(); // 8자리 숫자 생성
+      String newCode = (10000000 + Random().nextInt(90000000)).toString();
 
       await docRef.set({
-        'code': newCode, // ✅ 'code' 필드명으로 Firestore에 저장
+        'code': newCode,
       });
 
       setState(() {
-        code = newCode; // ✅ 변수 'code' 업데이트
+        code = newCode;
       });
 
       print("🔥 오늘의 인증 코드 생성됨: $newCode (Firestore에 저장됨)");
     } else {
       setState(() {
-        code = doc['code']; // ✅ Firestore에서 가져온 기존 코드 적용
+        code = doc['code'];
       });
 
       print("✅ Firestore에서 기존 인증 코드 유지: ${doc['code']}");
@@ -85,7 +134,6 @@ class _CalendarPageState extends State<CalendarPage> {
     for (var eventDoc in eventDocs.docs) {
       final data = eventDoc.data();
 
-      // _selecteItem 값이 null이 아니고, items에 포함되어 있지 않다면 필터링
       if (_selecteItem != null &&
           !(data['items'] as List<dynamic>).contains(_selecteItem)) {
         continue;
@@ -197,18 +245,32 @@ class _CalendarPageState extends State<CalendarPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            title,
-                            style: TextStyle(
-                              fontSize: isExpanded ? 16 : 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1, // 한 줄까지만 표시
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (title.contains("脚立")) ...[
+                                Icon(
+                                  Symbols.tools_ladder,
+                                  size: isExpanded ? 16 : 12,
+                                ),
+                                SizedBox(width: 4),
+                              ],
+                              Flexible( // ✅ 핵심 포인트
+                                child: Text(
+                                  title,
+                                  style: TextStyle(
+                                    fontSize: isExpanded ? 16 : 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ],
                           ),
-                        if (isExpanded) ...[
+                          if (isExpanded) ...[
                           Text(
                             description,
                             style: TextStyle(
@@ -230,9 +292,6 @@ class _CalendarPageState extends State<CalendarPage> {
       },
     );
   }
-
-
-
 
 
   Future<Map<String, List<DocumentSnapshot>>> _fetchLadderAndEventDocuments() async {
@@ -394,7 +453,6 @@ class _CalendarPageState extends State<CalendarPage> {
   }
   List<Map<String, dynamic>> _getEventsForDay(DateTime day) {
     final events = _events[DateTime(day.year, day.month, day.day)] ?? [];
-    // print("Events for ${DateFormat('yyyy-MM-dd').format(day)}: $events");
     return events;
   }
 
@@ -405,7 +463,9 @@ class _CalendarPageState extends State<CalendarPage> {
     bool showSideMenu = screenWidth > 600; // 600px 이상이면 사이드 메뉴 표시
 
     return Scaffold(
-      appBar: showSideMenu ? null : AppBar(
+      appBar:
+      // showSideMenu ? null :
+      AppBar(
         title: Container(
           height: 40,
           child: Image.asset(
@@ -441,7 +501,7 @@ class _CalendarPageState extends State<CalendarPage> {
       backgroundColor: Colors.white,
       body: Row(
         children: [
-          if (showSideMenu) SideMenu(parentContext: context), // 사이드 메뉴 (600px 이상일 때만 표시)
+          // if (showSideMenu) SideMenu(parentContext: context), // 사이드 메뉴 (600px 이상일 때만 표시)
           Expanded(
             child: Center(
               child: ConstrainedBox(
@@ -633,14 +693,36 @@ class _CalendarPageState extends State<CalendarPage> {
                                     subtitle: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          '現場名 : ${event['location']}',
-                                          style: TextStyle(color: Color(0xFF013B5E), fontSize: 20),
+                                        RichText(
+                                          text: TextSpan(
+                                            style: TextStyle(fontSize: 20, color: Color(0xFF013B5E)),
+                                            children: [
+                                              TextSpan(
+                                                text: '現場名 : ',
+                                              ),
+                                              TextSpan(
+                                                text: '${event['location']}',style: TextStyle(fontWeight: FontWeight.w900),
+                                              ),
+                                            ],
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
                                         ),
                                         SizedBox(height: 4),
-                                        Text(
-                                          '項目 : ${event['items'].join(', ')}',
-                                          style: TextStyle(color: Color(0xFF013B5E), fontSize: 18),
+                                        RichText(
+                                          text: TextSpan(
+                                            style: TextStyle(fontSize: 18, color: Color(0xFF013B5E)),
+                                            children: [
+                                              TextSpan(
+                                                text: '項目 : ',
+                                              ),
+                                              TextSpan(
+                                                text: '${event['items']}',style: TextStyle(fontWeight: FontWeight.w900),
+                                              ),
+                                            ],
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
                                         ),
                                         // Wrap(
                                         //   children: event['items'].map<Widget>((item) {
@@ -658,9 +740,20 @@ class _CalendarPageState extends State<CalendarPage> {
                                         //   }).toList(),
                                         // ),
                                         SizedBox(height: 4),
-                                        Text(
-                                          '借りた人 : ${event['borrower']}',
-                                          style: TextStyle(color: Color(0xFF013B5E)),
+                                        RichText(
+                                          text: TextSpan(
+                                            style: TextStyle(fontSize: 18, color: Color(0xFF013B5E)),
+                                            children: [
+                                              TextSpan(
+                                                text: '借りた人 : ',
+                                              ),
+                                              TextSpan(
+                                                text: '${event['borrower']}',style: TextStyle(fontWeight: FontWeight.w900),
+                                              ),
+                                            ],
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
                                         ),
                                         SizedBox(height: 8),
                                         Row(
@@ -668,11 +761,10 @@ class _CalendarPageState extends State<CalendarPage> {
                                             return Padding(
                                               padding: const EdgeInsets.symmetric(horizontal: 4.0),
                                               child: Container(
-                                                width: 20,
-                                                height: 20,
+                                                width: 40,
+                                                height: 8,
                                                 decoration: BoxDecoration(
                                                   color: color,
-                                                  shape: BoxShape.circle,
                                                 ),
                                               ),
                                             );
@@ -698,7 +790,31 @@ class _CalendarPageState extends State<CalendarPage> {
                                               elevation: 2.0,
                                               backgroundColor: Colors.white,
                                               title: Text("削除確認"),
-                                              content: Text("本当にこのノートを削除しますか"),
+                                              content: Container(
+                                                height: 100,
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text("本当にこの内容を削除しますか?"),
+                                                    Text(
+                                                      "現場名 : ${event['location']}",
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                    ),
+                                                    SizedBox(height: 15,),
+                                                    if(event['borrower'] != userData?['nickname'])
+                                                      Text(
+                                                        "他人の予約ですが消しますか？",
+                                                        style: TextStyle(
+                                                          color: Colors.redAccent,
+                                                          fontWeight: FontWeight.bold, // ✅ 이 줄 추가
+                                                        ),
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                      )
+                                                  ],
+                                                ),
+                                              ),
                                               actions: [
                                                 TextButton(
                                                   onPressed: () {
@@ -794,7 +910,7 @@ class _CalendarPageState extends State<CalendarPage> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
-            "お借りする",
+            "借りる",
             style: GoogleFonts.notoSansJp(
               fontSize: 16,
               fontWeight: FontWeight.bold,

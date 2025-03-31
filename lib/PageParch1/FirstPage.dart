@@ -1,23 +1,19 @@
-import 'package:ModulexNote/PageParch1/ImageNoticePage/reportPage.dart';
 import 'package:carousel_slider/carousel_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../LadderList/CalendarPage.dart';
 import '../parts/SideManu.dart';
 import '../parts/movepage.dart';
-import 'ImageNoticePage/AddImageNoticePage.dart';
-import 'ImageNoticePage/DetailPage.dart';
-import 'Manual/Manualpage.dart';
+import 'ProjectPage/AddProject/AddImageNoticePage.dart';
 import 'NoticePage/AddNoticePage.dart';
 import 'NoticePage/NoticeDetailPage.dart';
 import 'PageParch1.dart';
-import 'ImageNoticePage/Agenda_Material  .dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Text;
 
 import '../parts/drawer.dart';
+import 'ProjectPage/DetailPage.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({super.key});
@@ -67,8 +63,9 @@ class _FirstPageState extends State<FirstPage> {
                   SizedBox(height: 15),
                   Padding(padding: const EdgeInsets.all(8.0), child: Divider(color: Colors.grey, thickness: 1, height: 20,),),
                   SizedBox(height: 15),
-                  _buildSearchBar(),   // 검색창
-                  _buildAgendaList(),  // 🔥 이달의 안건 (복구 완료)
+                  _club(context),
+                  SizedBox(height: 15),
+                  _companyContribution()
                 ],
               ),
             ),
@@ -78,75 +75,6 @@ class _FirstPageState extends State<FirstPage> {
     );
   }
 
-
-
-  /// 🔍 검색창 위젯
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: EdgeInsets.all(10),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(50),
-          border: Border.all(color: Colors.black12, width: 3),
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 25),
-          child: TextField(
-            onChanged: (value) {
-              setState(() {
-                searchQuery = value;
-              });
-            },
-            inputFormatters: [LengthLimitingTextInputFormatter(10)],
-            decoration: InputDecoration(
-              hintText: 'Find search Note',
-              border: InputBorder.none,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 📌 🔥 "이달의 안건" 리스트 (복구 완료)
-  Widget _buildAgendaList() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection("FirstPage").snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text("データを読み込む際にエラーが発生しました"));
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text("表示するページがありません"));
-        }
-
-
-        List<QueryDocumentSnapshot> filteredData = snapshot.data!.docs.where((note) {
-          return note["title"]
-              .toString()
-              .toLowerCase()
-              .contains(searchQuery.toLowerCase());
-        }).toList();
-
-        // 최신 데이터가 위로 오도록 정렬
-        filteredData = filteredData.reversed.toList();
-
-        return Column(
-          children: filteredData.map((note) {
-            return NewsCard(() {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => report(note)),
-              );
-            }, note);
-          }).toList(),
-        );
-      },
-    );
-  }
 
   /// 📢 공지사항 리스트
   Widget _buildNoticeList() {
@@ -166,7 +94,7 @@ class _FirstPageState extends State<FirstPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AddNoticePage()),
+                    MaterialPageRoute(builder: (context) => AddNoticeWizard()),
                   );
                 },
                 icon: Icon(Icons.add, color: Colors.white),
@@ -364,7 +292,7 @@ class _FirstPageState extends State<FirstPage> {
           ),
         ),
         SizedBox(
-          height: 200,
+          height: 210,
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection("FirstPage")
@@ -387,12 +315,14 @@ class _FirstPageState extends State<FirstPage> {
                 itemCount: snapshot.data!.docs.length,
                 itemBuilder: (context, index) {
                   var notice = snapshot.data!.docs[index].data() as Map<String, dynamic>;
-
                   final imageList = List<String>.from(notice['imageUrls'] ?? []);
                   final firstImageUrl = imageList.isNotEmpty ? imageList.first : '';
                   final pdfUrl = notice['pdfUrl'] ?? '';
                   final title = notice['title'] ?? '';
-                  final content = notice['content'] ?? '';
+                  final contentJson = notice['content'] ?? [];
+                  final document = Document.fromJson(contentJson);
+                  final plainText = document.toPlainText();
+
 
                   return GestureDetector(
                     onTap: () {
@@ -452,8 +382,8 @@ class _FirstPageState extends State<FirstPage> {
                                     ),
                                     SizedBox(height: 4),
                                     Text(
-                                      content.isNotEmpty ? content : "内容なし",
-                                      maxLines: 2,
+                                      plainText.isNotEmpty ? plainText : "内容なし",
+                                      maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(fontSize: 12),
                                     ),
@@ -484,4 +414,115 @@ class _FirstPageState extends State<FirstPage> {
       ],
     );
   }
+
+  /// 🏫 부활동 정보 위젯
+  Widget _club(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "🏫 部活動紹介",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 300,
+            width: double.infinity,
+            child: Stack(
+              children: [
+                // 이미지
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(40),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset(
+                        "poto/club/sample_club.jpg",
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            child: Center(child: Icon(Icons.broken_image)),
+                          );
+                        },
+                      ),
+                      Container(
+                        color: Colors.black.withOpacity(0.3), // 🔹 30% 어두움
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 텍스트 (오른쪽 하단)
+                Positioned(
+                  bottom: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text("🏃‍♂️ モデュールランニング部", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 4),
+                        Text("健康的な生活と社内交流を目的とした部活動です。", style: TextStyle(color: Colors.white, fontSize: 12)),
+                        Text("目標：全員で45kmマラソン完走！", style: TextStyle(color: Colors.white, fontSize: 12)),
+                        Text("部員数：12名 / 設立：2025年4月", style: TextStyle(color: Colors.white, fontSize: 12)),
+                        Text("部長：山田 太郎", style: TextStyle(color: Colors.white, fontSize: 12)),
+
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  /// 🏢 회사의 사회적 기여 섹션
+  Widget _companyContribution() {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "🏢 社会への取り組み",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            color: const Color(0xfff6f8fa),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    "私たちModuleXは、持続可能な社会の実現を目指し、以下のような取り組みを行っています：",
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  SizedBox(height: 12),
+                  Text("🌱 環境に配慮したLED照明の開発", style: TextStyle(fontSize: 13)),
+                  Text("📚 教育機関への照明設計ノウハウの提供", style: TextStyle(fontSize: 13)),
+                  Text("🤝 地域社会との連携によるイベント支援", style: TextStyle(fontSize: 13)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
 }

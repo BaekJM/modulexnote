@@ -1,5 +1,6 @@
-import 'package:ModulexNote/PageParch1/ImageNoticePage/parts/NoticeSidemanu.dart';
+import 'package:ModulexNote/PageParch1/ProjectPage/parts/NoticeSidemanu.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 
 class Downloadpage extends StatefulWidget {
   final dynamic notice;
@@ -20,7 +21,9 @@ class _DownloadpageState extends State<Downloadpage> {
         : (widget.notice.data() as Map<String, dynamic>);
 
     final String title = data["title"] ?? "";
-    final String content = data["content"] ?? "";
+    final List<dynamic> contentJson = data["content"] ?? [];
+    final Document document = Document.fromJson(contentJson);
+    final String content = document.toPlainText();
     final String pdfUrl = data["pdfUrl"] ?? "";
     final List<String> imageUrls =
     data.containsKey("imageUrls") ? List<String>.from(data["imageUrls"]) : [];

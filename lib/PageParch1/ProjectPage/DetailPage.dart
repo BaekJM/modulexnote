@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:ModulexNote/PageParch1/ImageNoticePage/parts/NoticeSidemanu.dart';
+import 'package:ModulexNote/PageParch1/ProjectPage/parts/NoticeSidemanu.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 
 class DetailPage extends StatefulWidget {
   final dynamic notice;
@@ -21,7 +22,22 @@ class _DetailPageState extends State<DetailPage> {
         : (widget.notice.data() as Map<String, dynamic>);
 
     final String title = data["title"] ?? "";
-    final String content = data["content"] ?? "";
+
+    // content 가져오기 (타입 확인 및 변환 포함)
+    final dynamic rawContent = data["content"];
+    late final Document document;
+
+    if (rawContent is List) {
+      try {
+        document = Document.fromJson(rawContent.cast<Map<String, dynamic>>());
+      } catch (e) {
+        print("⚠️ content 파싱 오류: $e");
+        document = Document()..insert(0, '\n'); // 최소 하나의 줄 삽입
+      }
+    } else {
+      document = Document()..insert(0, '\n'); // 기본 빈 문서
+    }
+    final String content = document.toPlainText();
     final String pdfUrl = data["pdfUrl"] ?? "";
     final List<String> imageUrls =
     data.containsKey("imageUrls") ? List<String>.from(data["imageUrls"]) : [];

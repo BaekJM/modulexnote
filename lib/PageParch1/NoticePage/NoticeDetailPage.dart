@@ -109,14 +109,14 @@ class _NoticeDetailPageState extends State<NoticeDetailPage> {
                 TextField(
                   controller: _titleController,
                   enabled: _isEditable,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: _isEditable ? Colors.blue : Colors.black),
                   decoration: const InputDecoration(
                     labelText: "タイトル",
                     border: InputBorder.none,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(formattedDate, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                Text(formattedDate, style: TextStyle(fontSize: 12, color: Color(0xff003f62))),
               ],
             ),
           ),

@@ -2,47 +2,78 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' hide Text;
 
-class AddNoticePage extends StatefulWidget {
+
+class AddNoticeWizard extends StatefulWidget {
   @override
-  _AddNoticePageState createState() => _AddNoticePageState();
+  _AddNoticeWizardState createState() => _AddNoticeWizardState();
 }
 
-class _AddNoticePageState extends State<AddNoticePage> {
-  final TextEditingController titleController = TextEditingController();
-  bool isLoading = false;
+class _AddNoticeWizardState extends State<AddNoticeWizard> {
+  int currentPage = 0;
 
-  final QuillController _quillController = QuillController.basic();
+  final TextEditingController titleController = TextEditingController();
+  final QuillController quillController = QuillController.basic();
   final FocusNode _focusNode = FocusNode();
 
-  @override
-  void dispose() {
-    _quillController.dispose();
-    super.dispose();
+  bool isLoading = false;
+
+  void _nextPage() {
+    if (currentPage == 0) {
+      if (titleController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("タイトルを入力してください。")),
+        );
+        return;
+      }
+    }
+
+    if (currentPage == 1) {
+      if (quillController.document.isEmpty()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("内容を入力してください。")),
+        );
+        return;
+      }
+    }
+
+    if (currentPage < 2) {
+      setState(() {
+        currentPage++;
+      });
+    } else {
+      _saveNotice();
+    }
+  }
+
+
+  void _prevPage() {
+    if (currentPage > 0) {
+      setState(() {
+        currentPage--;
+      });
+    }
   }
 
   void _saveNotice() async {
-    if (titleController.text.isEmpty || _quillController.document.isEmpty()) {
+    if (titleController.text.isEmpty || quillController.document.isEmpty()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("タイトルと内容を入力してください。")),
       );
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     try {
       await FirebaseFirestore.instance.collection("Notice").add({
         "title": titleController.text,
-        "content": _quillController.document.toDelta().toJson(),
+        "content": quillController.document.toDelta().toJson(),
         "date": Timestamp.now(),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("お知らせが保存されました。")),
       );
-
       Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -50,13 +81,97 @@ class _AddNoticePageState extends State<AddNoticePage> {
       );
     }
 
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => isLoading = false);
   }
+
+  Widget _buildTitlePage() => Column(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Text("📌 タイトルを入力してください", style: TextStyle(fontSize: 18)),
+      SizedBox(height: 40),
+      TextField(
+        controller: titleController,
+        decoration: InputDecoration(
+          hintText: "例: サーバーメンテナンスのお知らせ",
+          border: OutlineInputBorder(),
+        ),
+      ),
+    ],
+  );
+
+
+  Widget _buildContentPage() => Column(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      Text("📝 内容を入力してください", style: TextStyle(fontSize: 18)),
+      SizedBox(height: 10),
+      Expanded(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            decoration: BoxDecoration(border: Border.all(color: Colors.grey)),
+            child: Column(
+              children: [
+                QuillSimpleToolbar(
+                  controller: quillController,
+                  configurations: const QuillSimpleToolbarConfigurations(),
+                ),
+                Expanded(
+                  child: QuillEditor.basic(
+                    controller: quillController,
+                    configurations: const QuillEditorConfigurations(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+
+
+  Widget _buildConfirmPage() => Column(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      Text("✅ この内容で保存しますか？", style: TextStyle(fontSize: 18)),
+      SizedBox(height: 20),
+      Text("${titleController.text}", style: TextStyle(fontWeight: FontWeight.bold)),
+      SizedBox(height: 10),
+      SizedBox(height: 10),
+      Container(
+        height: 200,
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+        ),
+        child: QuillEditor.basic(
+          controller: quillController,
+          configurations: const QuillEditorConfigurations(),
+        ),
+      ),
+    ],
+  );
+
 
   @override
   Widget build(BuildContext context) {
+    Widget page;
+    switch (currentPage) {
+      case 0:
+        page = _buildTitlePage();
+        break;
+      case 1:
+        page = _buildContentPage();
+        break;
+      case 2:
+        page = _buildConfirmPage();
+        break;
+      default:
+        page = Container();
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -67,50 +182,31 @@ class _AddNoticePageState extends State<AddNoticePage> {
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            Text("タイトル", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            TextField(
-              controller: titleController,
-              decoration: InputDecoration(
-                hintText: "タイトルを入力してください",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 20),
-
-            Text("内容", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-
-            Container(
-              height: 300,
-              decoration: BoxDecoration(border: Border.all(color: Colors.grey)),
-              child: Column(
-                children: [
-                  QuillSimpleToolbar(
-                    controller: _quillController,
-                    configurations: const QuillSimpleToolbarConfigurations(),
-                  ),
+            Expanded(child: page),
+            Row(
+              children: [
+                if (currentPage > 0)
                   Expanded(
-                    child: QuillEditor.basic(
-                      controller: _quillController,
-                      configurations: const QuillEditorConfigurations(),
+                    child: OutlinedButton(
+                      onPressed: _prevPage,
+                      child: Text("戻る"),
                     ),
-                  )
-                ],
-              ),
-            ),
-
-            SizedBox(height: 20),
-
-            isLoading
-                ? Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-              onPressed: _saveNotice,
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-              ),
-              child: Text("保存する"),
-            ),
+                  ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                    onPressed: _nextPage,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text(currentPage == 2 ? "保存する" : "次へ"),
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),

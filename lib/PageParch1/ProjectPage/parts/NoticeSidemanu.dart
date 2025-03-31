@@ -1,6 +1,6 @@
-import 'package:ModulexNote/PageParch1/ImageNoticePage/setting.dart';
+import 'package:ModulexNote/PageParch1/ProjectPage/setting.dart';
 import 'package:flutter/material.dart';
-import 'package:ModulexNote/PageParch1/ImageNoticePage/reportPage.dart';
+import 'package:ModulexNote/PageParch1/ProjectPage/reportPage.dart';
 import '../../../parts/movepage.dart';
 import '../../FirstPage.dart';
 import '../DetailPage.dart';

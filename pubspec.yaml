@@ -67,6 +67,8 @@ dependencies:
   flutter_cached_pdfview: ^0.4.3
   syncfusion_flutter_pdfviewer: ^28.2.12
   fl_chart: ^0.63.0
+  material_symbols_icons: ^4.2445.0
+
 
 
 
@@ -109,6 +111,12 @@ flutter:
    - poto/test/Image4.jpg
    - poto/test/Image5.jpg
    - poto/test/test.png
+   - poto/test/test1.png
+   - poto/test/test2.png
+   - poto/test/test3.png
+   - poto/test/test4.png
+   - poto/StockStatusPage/StockStatusImage.jpg
+   - poto/club/sample_club.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

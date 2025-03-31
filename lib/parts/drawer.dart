@@ -1,9 +1,7 @@
-import 'package:ModulexNote/LadderList/Ladder_firestpage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../LadderList/CalendarPage.dart';
 import '../PageParch1/FirstPage.dart';
 import 'SideManu.dart';
 
@@ -147,7 +145,8 @@ class _Drawer_otionState extends State<Drawer_otion> {
               ],
             ),
           ),
-          SideMenu(parentContext: context)
+          // SideMenu(parentContext: context),
+
         ],
       ),
     );
